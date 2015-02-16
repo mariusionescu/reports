@@ -1,0 +1,13 @@
+pillow
+django
+argparse
+docutils
+mimeparse
+setproctitle
+virtualenv
+celery
+django-celery
+PyYAML
+django-adminplus
+djangorestframework
+-e git://github.com/mariusionescu/console_admin.git#egg=console_admin

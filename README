@@ -1,2 +1,29 @@
+1. INSTALLATION
+
+[MAIN SERVER]
+
 Clone repo
+# cd /opt
 # git clone git@github.com:mariusionescu/reports.git
+
+Update repo
+# apt-get update
+
+Install dev libraries
+# apt-get install git libffi-dev libssl-dev libjpeg-dev
+
+Install python libraries and tools
+# apt-get install ipython python-setuptools python-pip python-dev python-pandas python-tables
+
+Install python drivers
+# apt-get install python-mysqldb python-memcache
+
+Install infrastructure components
+# apt-get install nginx postfix
+
+Optional, for development environment
+# apt-get install mysql-server phpmyadmin memcached
+
+Install the requirements
+# cd /opt/reports
+# pip install -r requirements.txt
