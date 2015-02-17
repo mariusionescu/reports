@@ -46,7 +46,7 @@ class Report(models.Model):
             update_fields=None
         )
 
-    def append(self, rows, index, timestamp=None):
+    def append(self, rows, index=None, timestamp=None):
         """
         rows parameter has the following format:
         rows = [
@@ -64,7 +64,10 @@ class Report(models.Model):
         if not timestamp:
             timestamp = datetime.utcnow()
 
-        dataframe = pandas.DataFrame(rows, index=[r[index] for r in rows])
+        if index:
+            dataframe = pandas.DataFrame(rows, index=[r[index] for r in rows])
+        else:
+            dataframe = pandas.DataFrame(rows)
         panel = pandas.Panel.from_dict({timestamp: dataframe}, orient='minor')
         panel.to_hdf(self.hdf_file, self.KEY, format='table', append=True)
 
@@ -108,7 +111,8 @@ class Report(models.Model):
                     l = normalized_table.get(key, {})
                     l[column] = value
                     normalized_table[key] = l
-        return table.values()
+
+        return normalized_table.values()
 
     def __unicode__(self):
         return self.name

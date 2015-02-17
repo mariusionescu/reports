@@ -4,6 +4,7 @@ from reports.models import Report
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
+import collections
 
 
 class JSONRequest(object):
@@ -11,7 +12,8 @@ class JSONRequest(object):
         self.raw = None
 
     def to_dict(self):
-        return json.loads(self.raw)
+        dictionary = json.loads(self.raw)
+        return self.convert(dictionary)
 
     def to_str(self):
         return self.raw
@@ -30,6 +32,16 @@ class JSONRequest(object):
 
     def to_http(self):
         return HttpResponse(self.raw, content_type='application/json')
+
+    def convert(self, data):
+        if isinstance(data, basestring):
+            return str(data)
+        elif isinstance(data, collections.Mapping):
+            return dict(map(self.convert, data.iteritems()))
+        elif isinstance(data, collections.Iterable):
+            return type(data)(map(self.convert, data))
+        else:
+            return data
 
 
 class GoogleChart(object):
@@ -75,7 +87,7 @@ class ReportView(View):
         api_key = self.data.get('key')
 
         try:
-            self.report = Report.object.get(id=report_id, key__key=api_key)
+            self.report = Report.objects.get(id=report_id, key__key=api_key)
         except Report.DoesNotExist:
             raise InvalidKey
 
@@ -90,7 +102,9 @@ class ReportView(View):
             return response.to_http()
 
         rows = self.data['rows']
-        index = self.data['index']
+        if type(rows) is not list:
+            rows = [rows]
+        index = self.data.get('index')
         unix_time = self.data.get('timestamp')
         if unix_time:
             timestamp = datetime.fromtimestamp(unix_time)
@@ -111,7 +125,7 @@ class ReportView(View):
             response = JSONRequest.from_dict({'success': False, 'error': 'INVALID_PAYLOAD'})
             return response.to_http()
 
-        aggregation = self.data['aggregation']
+        aggregation = self.data.get('aggregation', {})
         start_unix_time = self.data.get('start_date')
         output = self.data.get('format', 'json')
         if start_unix_time:
