@@ -18,7 +18,7 @@ Install python libraries and tools
 Install python drivers
 # apt-get install python-mysqldb python-memcache
 
-Install infrastructure components
+Optional, for production environment
 # apt-get install nginx postfix
 
 Optional, for development environment
@@ -27,3 +27,7 @@ Optional, for development environment
 Install the requirements
 # cd /opt/reports
 # pip install -r requirements.txt
+
+Optional, for development environment
+# echo export PYTHONPATH=/opt/reports >> ~/.bashrc
+# echo export DJANGO_SETTINGS_MODULE=reports.settings.development >> ~/.bashrc
