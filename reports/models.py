@@ -12,7 +12,7 @@ class ApiKey(models.Model):
         verbose_name = 'API Key'
 
     key = models.CharField(max_length=64, null=False)
-    user = models.ForeignKey(User, null=False, help_text="The user who is associated with the ApiKey.")
+    user = models.ForeignKey(User, null=False, help_text="The user who is associated with the API key.")
 
     def __unicode__(self):
         return self.key

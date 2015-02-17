@@ -24,6 +24,10 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
+TEMPLATE_DIRS = (
+    "/opt/reports/reports/templates",
+)
+
 ALLOWED_HOSTS = []
 
 
