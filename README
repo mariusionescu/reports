@@ -31,3 +31,7 @@ Install the requirements
 Optional, for development environment
 # echo export PYTHONPATH=/opt/reports >> ~/.bashrc
 # echo export DJANGO_SETTINGS_MODULE=reports.settings.development >> ~/.bashrc
+# . ~/.bashrc
+
+# python manage.py migrate
+# python manage.py createsuperuser
