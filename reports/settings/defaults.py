@@ -37,13 +37,14 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'adminplus'
+    'adminplus',
+    'reports'
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -86,17 +87,36 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
+STATIC_DIRS = (
+    '/opt/reports/reports/static',
+)
+
 ADMIN_MENU = [
+    {
+        'name': 'Inventory',
+        'models': [
+            'ApiKey',
+            'Report',
+            # Or you can add an external (or internal) URL:
+            # ('URL', 'https://google.com/')
+        ],
+        'icon':'icon-stack'
+    },
     {
         'name': 'Security',
         'models': [
             'User',
             'Group',
             # Or you can add an external (or internal) URL:
-            ('URL', 'https://google.com/')
+            # ('URL', 'https://google.com/')
         ],
         'icon':'icon-stack'
     }
 ]
 
 BOOTSTRAP_ADMIN_SIDEBAR_MENU = True
+
+HDF_PATH = '/var/tmp'
+
+CONSOLE_ADMIN_APP_NAME = 'Reports'
+CONSOLE_ADMIN_APP_LOGO_URL = '/static/img/logo.png'
