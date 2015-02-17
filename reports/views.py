@@ -75,7 +75,7 @@ class ReportView(View):
         api_key = self.data.get('key')
 
         try:
-            self.report = Report.object.get(id=report_id, key__key=api_key)
+            self.report = Report.objects.get(id=report_id, key__key=api_key)
         except Report.DoesNotExist:
             raise InvalidKey
 
