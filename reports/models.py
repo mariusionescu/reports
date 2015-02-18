@@ -67,6 +67,8 @@ class Report(models.Model):
         if index:
             dataframe = pandas.DataFrame(rows, index=[r[index] for r in rows])
         else:
+            for row in rows:
+                row['timestamp'] = (timestamp - datetime(1970, 1, 1)).total_seconds()
             dataframe = pandas.DataFrame(rows)
         panel = pandas.Panel.from_dict({timestamp: dataframe}, orient='minor')
         panel.to_hdf(self.hdf_file, self.KEY, format='table', append=True)
@@ -96,9 +98,10 @@ class Report(models.Model):
         )
 
         table = []
+        axis = 1 if aggregation else 0
         for column in panel.keys():
             a = aggregation.get(column, 'max')
-            table.append({column: dict(getattr(panel[column], a)(1))})
+            table.append({column: dict(getattr(panel[column], a)(axis))})
 
         return self.normalize_table(table)
 

@@ -21,7 +21,7 @@ class JSONRequest(object):
     @staticmethod
     def from_request(request):
         json_request = JSONRequest()
-        json_request.raw = request.read()
+        json_request.raw = request.read() or request.GET.keys()[0]
         return json_request
 
     @staticmethod
@@ -31,7 +31,9 @@ class JSONRequest(object):
         return json_request
 
     def to_http(self):
-        return HttpResponse(self.raw, content_type='application/json')
+        response = HttpResponse(self.raw, content_type='application/json')
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
 
     def convert(self, data):
         if isinstance(data, basestring):
@@ -124,10 +126,9 @@ class ReportView(View):
         except InvalidPayload:
             response = JSONRequest.from_dict({'success': False, 'error': 'INVALID_PAYLOAD'})
             return response.to_http()
-
         aggregation = self.data.get('aggregation', {})
         start_unix_time = self.data.get('start_date')
-        output = self.data.get('format', 'json')
+        output = self.data.get('output', 'json')
         if start_unix_time:
             start_date = datetime.fromtimestamp(start_unix_time)
         else:
@@ -140,7 +141,6 @@ class ReportView(View):
             end_date = None
 
         data = self.report.read(aggregation, start_date, end_date)
-
         if output == 'json':
             json_request = JSONRequest.from_dict({
                 'success': True,
