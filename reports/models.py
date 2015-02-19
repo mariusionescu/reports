@@ -74,7 +74,8 @@ class Report(models.Model):
         panel.to_hdf(self.hdf_file, self.KEY, format='table', append=True)
 
     def purge(self):
-        os.remove(self.hdf_file)
+        if os.path.exists(self.hdf_file):
+            os.remove(self.hdf_file)
 
     def read(self, aggregation, start_date=None, end_date=None):
         """
