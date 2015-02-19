@@ -24,6 +24,7 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
+
 TEMPLATE_DIRS = (
     "/opt/reports/reports/templates",
 )
@@ -90,6 +91,8 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = '/opt/reports/reports/assets/static'
+STATICFILES_DIRS = ('/opt/reports/reports/static',)
 
 STATIC_DIRS = (
     '/opt/reports/reports/static',
