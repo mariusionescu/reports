@@ -53,6 +53,12 @@ class ApiKeyAdmin(admin.ModelAdmin):
 admin.site.register(ApiKey, ApiKeyAdmin)
 
 
+def reset(modeladmin, request, queryset):
+    for report in queryset.all():
+        report.purge()
+reset.short_description = "Reset the selected reports"
+
+
 class ReportAdmin(admin.ModelAdmin):
 
     list_display = ('name',)
@@ -70,5 +76,7 @@ class ReportAdmin(admin.ModelAdmin):
         if not obj.id:
             obj.user = request.user
         obj.save()
+
+    actions = [reset]
 
 admin.site.register(Report, ReportAdmin)
