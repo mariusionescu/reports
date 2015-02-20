@@ -177,4 +177,4 @@ class ReportView(View):
         return response.to_http()
 
     def get(self, request, report_id):
-        return render_to_response('get.html')
+        return render_to_response('get.html', {'report_id': report_id})
