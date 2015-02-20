@@ -114,8 +114,11 @@ class ReportView(View):
         else:
             timestamp = None
 
-        self.report.append(rows, index, timestamp)
-        response = JSONRequest.from_dict({'success': True})
+        try:
+            self.report.append(rows, index, timestamp)
+            response = JSONRequest.from_dict({'success': True})
+        except ValueError as e:
+            response = JSONRequest.from_dict({'success': False, 'error': 'INVALID_SCHEMA', 'message': e.message})
         return response.to_http()
 
     def post(self, request, report_id):
