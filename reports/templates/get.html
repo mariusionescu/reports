@@ -1,0 +1,64 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Signup Landing Page</title>
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        pre {
+            font-size: 12px
+        }
+    </style>
+    <!--<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,600,700' rel='stylesheet' type='text/css'>-->
+</head>
+<body>
+
+<div class="center">
+
+    <section style="display: block;">
+
+        <div class="form-box padded">
+            <h2>Available methods</h2>
+            <ul>
+                <li>PUT</li>
+                <li>POST</li>
+                <li>DELETE</li>
+            </ul>
+
+            <h2>Push data</h2>
+                    <pre>
+DATA='{
+    "key": "AMJ1IG2N4UEJUR2K",
+    "rows": {
+        "label": "users",
+        "count": 10
+    }
+}'
+curl -XPUT --data "$DATA" http://reports/api/v1/report/1/
+                    </pre>
+            <h2>Visualize data</h2>
+                    <pre>
+DATA='{
+    "key": "AMJ1IG2N4UEJUR2K",
+    "aggregation": {"count":"mean"}
+}'
+curl -XPOST --data "$DATA" http://reports/api/v1/report/1/
+                    </pre>
+
+            <h2>Refresh your data</h2>
+                    <pre>
+DATA='{"key": "AMJ1IG2N4UEJUR2K"}'
+curl -XDELETE --data "$DATA" http://reports/api/v1/report/1/
+                    </pre>
+
+        </div>
+
+        <div class="shadow"></div>
+
+    </section>
+</div>
+
+
+</body>
+</html>

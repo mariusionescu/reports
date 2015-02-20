@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime
 import collections
+from django.shortcuts import render, render_to_response
 
 
 class JSONRequest(object):
@@ -174,3 +175,6 @@ class ReportView(View):
 
         response = JSONRequest.from_dict({'success': True})
         return response.to_http()
+
+    def get(self, request, report_id):
+        return render_to_response('get.html')
