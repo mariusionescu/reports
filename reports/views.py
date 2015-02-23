@@ -143,8 +143,15 @@ class ReportView(View):
             end_date = datetime.fromtimestamp(end_unix_time)
         else:
             end_date = None
-
-        data = self.report.read(aggregation, start_date, end_date)
+        try:
+            data = self.report.read(aggregation, start_date, end_date)
+        except KeyError as e:
+            json_request = JSONRequest.from_dict({
+                'success': False,
+                'error': 'EMPTY_DB',
+                'message': e.message
+            })
+            return json_request.to_http()
         if output == 'json':
             json_request = JSONRequest.from_dict({
                 'success': True,

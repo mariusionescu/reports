@@ -32,7 +32,10 @@
             var self = this;
             this.id = args.containerID;
             this.type = args.type;
-            this.data = google.visualization.arrayToDataTable(addHeaders(args.data, args.headers));
+            console.log( args.data );
+            this.data = google.visualization.arrayToDataTable(
+                    addHeaders(args.data, args.headers)
+                );
             this.container = document.getElementById('report-data');
 
             switch (this.type) {
@@ -63,7 +66,6 @@
                     break;
 
                 case 'table':
-                    console.log(charts.length)
                     var table = new google.visualization.Table(this.container);
                     var options = {
                         title: args.name,
@@ -132,7 +134,6 @@
     {
         report_dom_element = document.querySelector('#report-data');
         report_data = JSON.parse( report_dom_element.getAttribute("report-data") );
-        console.log( report_data );
 
         $.ajax({
             url: "http://reports/api/v1/report/" + report_data.id + "/?" + encodeURIComponent(JSON.stringify({
@@ -149,37 +150,45 @@
         {
             _table = []
             _data = result.data;
+            _headers = [];
+            console.log(result.data);
             for( var i = 0; i < result.data.length; i++ )
             {
                 _row = [];
 
                 for (j in _data[ i ])
                 {
-                    console.log( _data[i][j], _row );
+                    var _rowExists = false;
+                    for( var k = 0; k < _headers.length; k++ )
+                    {
+                        if( _headers[k] == j )
+                        {
+                            _rowExists = true
+                        }
+                    }
+                    if( !_rowExists )
+                    {
+                        _headers.push( j )
+                    }
 
                     if( j == 'timestamp' )
                     {
                         var date = new Date(_data[i][j]*1000);
-
-                        _data[i][j] = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()
-                    }
-
-                    if( j != 'timestamp' && typeof _data[i][j] != 'number')
-                    {
-                        continue
+                        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                        var month = months[date.getMonth()];
+                        _data[i][j] = date.getFullYear() + '-' + month + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()
                     }
 
                     _row.push(_data[i][j])
                 }
-                _row[0] = _row.splice(1, 1, _row[0])[0];
+               // _row[0] = _row.splice(1, 1, _row[0])[0];
                 _table.push( _row )
             }
-
-            console.log( _table )
+            console.log( _headers )
             chartBuilder.addChart({
-                type: 'bar_chart',
+                type: 'table',
                 data: _table,
-                headers: ['1','2'],
+                headers: _headers,
                 name: 'REPORT',
                 tableSize: 10
             });
