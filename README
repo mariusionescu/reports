@@ -15,7 +15,7 @@ Install python drivers
 # apt-get install python-mysqldb python-memcache
 
 Optional, for production environment
-# apt-get install nginx postfix uwsgi
+# apt-get install nginx postfix uwsgi uwsgi-plugin-python
 
 Optional, for development environment
 # apt-get install mysql-server phpmyadmin memcached
