@@ -55,7 +55,7 @@ DATA='{
         "count": 10
     }
 }'
-curl -XPUT --data "$DATA" http://reports/api/v1/report/1/
+curl -XPUT --data "$DATA" http://reports.appixio.com/api/v1/report/1/
                     </pre>
             <h2>Visualize data</h2>
                     <pre>
@@ -63,13 +63,13 @@ DATA='{
     "key": "AMJ1IG2N4UEJUR2K",
     "aggregation": {"count":"mean"}
 }'
-curl -XPOST --data "$DATA" http://reports/api/v1/report/1/
+curl -XPOST --data "$DATA" http://reports.appixio.com/api/v1/report/1/
                     </pre>
 
             <h2>Refresh your data</h2>
                     <pre>
 DATA='{"key": "AMJ1IG2N4UEJUR2K"}'
-curl -XDELETE --data "$DATA" http://reports/api/v1/report/1/
+curl -XDELETE --data "$DATA" http://reports.appixio.com/api/v1/report/1/
                     </pre>
 
         </div>
