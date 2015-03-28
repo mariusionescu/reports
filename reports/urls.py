@@ -12,5 +12,6 @@ urlpatterns = patterns(
     '',
     url(r'^$', RedirectView.as_view(url='/static/site/index.html')),
     url(r'console/', include(admin.site.urls)),
+    url(r'dashboard/', RedirectView.as_view(url='/static/site/dashboard.html')),
     url(r'api/v1/report/(?P<report_id>\d+)/', ReportView.as_view()),
 )

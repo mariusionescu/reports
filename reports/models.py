@@ -77,7 +77,7 @@ class Report(models.Model):
         if os.path.exists(self.hdf_file):
             os.remove(self.hdf_file)
 
-    def read(self, aggregation, start_date=None, end_date=None):
+    def read(self, aggregation=None, start_date=None, end_date=None):
         """
         :param aggregation: {'column_1': 'sum', 'column_2': 'means'}
         :param start_date:
@@ -98,13 +98,55 @@ class Report(models.Model):
             ]
         )
 
-        table = []
-        axis = 1 if aggregation else 0
-        for column in panel.keys():
-            a = aggregation.get(column, 'max')
-            table.append({column: dict(getattr(panel[column], a)(axis))})
+        # table = []
+        # axis = 1 if aggregation else 0
+        # for column in panel.keys():
+        #    a = aggregation.get(column, 'max')
+        #    table.append({column: dict(getattr(panel[column], a)(axis))})
+        # return self.normalize_table(table)
 
-        return self.normalize_table(table)
+        if aggregation:
+            tables = []
+
+
+            try:
+                column = aggregation.keys()[0]
+                minor_data = getattr(panel[column], aggregation[column])(1)
+            except AttributeError:
+                return []
+
+            table = []
+
+            for index, row in minor_data.iteritems():
+                table.append({index:row})
+
+
+            timestamp = (panel.minor_axis.max().to_pydatetime() - datetime(1970, 1, 1)).total_seconds()
+            import ipdb; ipdb.set_trace()
+
+            tables.append({timestamp: table})
+
+            return tables
+        else:
+            tables = []
+            for key in panel.minor_axis:
+                minor_data = panel.minor_xs(key)
+                table = []
+
+                for index, row in minor_data.iterrows():
+                    _row = {}
+
+                    for column in minor_data.keys():
+                        _row[column] = row[column]
+
+                    table.append(_row)
+
+                timestamp = (key.to_pydatetime() - datetime(1970, 1, 1)).total_seconds()
+
+                tables.append({timestamp: table})
+
+            return tables
+
 
     @staticmethod
     def normalize_table(table):
