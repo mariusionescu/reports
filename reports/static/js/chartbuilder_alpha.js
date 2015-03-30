@@ -1,228 +1,253 @@
 (function( chartBuilder, $, undefined ) {
 
-    var libraryLoaded = false,
-        charts = [];
+    var _self = chartBuilder;
+        charts = {};
 
-    var imported = document.createElement('script');
-    imported.src = 'https://www.google.com/jsapi';
-    document.head.appendChild(imported);
-    imported.onload = function() {
-        console.log(11)
-        // ?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart","table"]}]}
-        google.load('visualization', '1.0', {'packages':["corechart","table"]});
+    _self.init = function() {
 
-        google.setOnLoadCallback(function(){
+        jQuery(".report-data").each(function(index, tag){
+            var report_tag = jQuery(this);
 
-            libraryLoaded = true;
-            chartBuilder.addChart = function (args) {
-                charts.push(new chart(args))
+            if( !report_tag.data('id') )
+            {
+                console.error( "-- report_missing id --" );
+                return
+            }
+
+            if( !report_tag.data('key') )
+            {
+                console.error( "-- report_missing API key --" );
+                return
+            }
+
+            _el = {
+                output: 'json',
+                start_date: report_tag.data('start_date'),
+                end_date: report_tag.data('end_date'),
+                aggregation: report_tag.data('aggregation'),
+                chart_type: report_tag.data('charttype'),
+                key: report_tag.data('key'),
+                report_id: report_tag.data('id')
+
             };
+
+            _self.addChart({
+                settings: _el,
+                dom_element: report_tag[0]
+            });
         });
-
-        //Public Method
-        chartBuilder.onLibraryLoaded = function () {
-            libraryLoaded = true;
-
-            google.load('visualization', '1.0', {'packages':['corechart']});
-            console.log( 1)
-        };
-
-        chartBuilder.export = function (reportID) {
-            for (var i = 0; i < charts.length; i++) {
-                if (charts[i].id == 'table_' + reportID) {
-                    charts[i].download()
-                }
-            }
-        };
-
-        //Public Method
-        chartBuilder.addChart = function (args) {
-
-            console.log( 'NL')
-            return
-        };
-
-        //Private Method
-        function chart(args) {
-
-            console.log( libraryLoaded, "STATUS")
-
-            var self = this;
-            this.id = args.containerID;
-            this.type = args.type;
-            var _data = addHeaders(args.data, args.headers)
-            console.log(_data)
-            this.data = google.visualization.arrayToDataTable(_data);
-            this.container = document.getElementById('report-data');
-
-            switch (this.type) {
-                case 'bar_chart':
-
-                    var bar_chart = new google.visualization.BarChart(this.container);
-                    var options = {
-                        title: args.name,
-                        vAxis: {
-                            title: 'Year',
-                            titleTextStyle: {color: 'red'}
-                        }
-                    };
-                    bar_chart.draw(this.data, options);
-                    break;
-
-                case 'line_chart':
-
-                    var options = {
-                        title: args.name,
-                        curveType: 'function',
-                        legend: {
-                            position: 'bottom'
-                        }
-                    };
-                    var line_chart = new google.visualization.LineChart(this.container);
-                    line_chart.draw(this.data, options);
-                    break;
-
-                case 'table':
-                    var table = new google.visualization.Table(this.container);
-                    var options = {
-                        title: args.name,
-                        showRowNumber: true,
-                        page: 'enable',
-                        pageSize: args.tableSize
-                    };
-                    table.draw(this.data, options);
-                    break;
-
-                case 'pie_chart':
-
-                    var pie_chart = new google.visualization.PieChart(this.container);
-                    var options = {
-                        title: args.name
-                    };
-                    pie_chart.draw(this.data, options);
-                    break;
-            }
-
-            this.download = function () {
-                var link = document.createElement("a");
-                link.setAttribute("href", "data:text/csv;charset=utf-8," + escape(convertJSONtoCSV()));
-                link.setAttribute("download", "Report_" + self.id);
-
-                link.click();
-            };
-
-
-            function convertJSONtoCSV() {
-                var array = typeof args.data != 'object' ? JSON.parse(args.data) : args.data,
-                    str = '';
-
-                for (var i = 0; i < array.length; i++) {
-                    var line = '';
-                    for (var index in array[i]) {
-                        line += array[i][index] + ',';
-                    }
-                    // Here is an example where you would wrap the values in double quotes
-                    /*for (var index in array[i]) {
-                     line += '"' + array[i][index] + '",';
-                     }*/
-                    line.slice(0, line.Length - 1);
-                    str += line + '\r\n';
-                }
-                return str
-            }
-        }
-
-        function addHeaders(data, headers) {
-            var _computedData = [headers];
-
-            for (var i = 0; i < data.length; i++) {
-                _computedData.push(data[i]);
-            }
-
-            return _computedData;
-        }
     };
 
-    /*
-        <div report-data='{"id":1, "aggregation":{"count": "sum"}, "key":"ASDASD23A"}'>
-    */
-
-    window.onload = function()
+    function draw_google_chart(args)
     {
-        report_dom_element = document.querySelector('.report-data');
-        var jEL = report_dom_element.getAttribute("report-data");
-        console.log( jEL );
-        report_data = JSON.parse( jEL );
-        console.log( report_data )
+        var self = this;
 
-        _el = JSON.stringify({
-                output: 'json',
-                //start_date: report_data.start_date,
-                //end_date: report_data.end_date,
-                aggregation: report_data.aggregation,
-                key: report_data.key
-            })
+        this.data = null;
+        this.computed_data = [];
+        this.computed_headers = [];
 
-        $.ajax({
-            url: "http://192.168.100.4/api/v1/report/" + report_data.id + "/",
-            data: _el,
-            type: "POST",
-            dataType: 'json'
-        }).done(
-        function(result)
-        {
-            console.log( result );
-            _table = []
-            _data = result.data;
-            _headers = [];
-            console.log(result.data);
-            for( var i = 0; i < result.data.length; i++ )
-            {
-                _row = [];
-
-                for (j in _data[ i ])
+        this.data_table = {
+            compute_data: function() {
+                if( self.data.length > 1 )
                 {
-                    var _rowExists = false;
-                    for( var k = 0; k < _headers.length; k++ )
-                    {
-                        if( _headers[k] == j )
-                        {
-                            _rowExists = true
-                        }
-                    }
-                    if( !_rowExists )
-                    {
-                        _headers.push( j )
-                    }
+                    console.error(" -- the table must have only 1 set of data -- ")
+                    return;
+                }
 
-                    if( j == 'timestamp' )
+                var _headers = [];
+                var _data =[];
+                for( var i in self.data[0])
+                {
+                    rows = self.data[0][i];
+
+                    for( var j = 0; j < rows.length; j++ )
                     {
-                        var date = new Date(_data[i][j]*1000);
+                        _row = []
+                        for( var k in rows[j] )
+                        {
+                            if( _headers.indexOf( k ) == -1 )
+                            {
+                                _headers.push(k);
+                            }
+
+                            _row.push(rows[j][k].toString())
+                        }
+                        _data.push(_row)
+                    }
+                    self.computed_headers = _headers;
+                    self.computed_data = _data;
+                }
+            },
+            draw: function() {
+                var _table = new google.visualization.DataTable();
+                for( var i = 0; i < self.computed_headers.length; i++ )
+                {
+                    _table.addColumn('string', self.computed_headers[i]);
+                }
+
+                _table.addRows(self.computed_data);
+
+                var table = new google.visualization.Table(args.dom_element);
+                table.draw(_table, {showRowNumber: true});
+            },
+            display: function() {
+                this.compute_data();
+                this.draw();
+            }
+        };
+
+        this.pie_chart = {
+            compute_data: function() {
+                if( self.data.length > 1 )
+                {
+                    console.error(" -- the table must have only 1 set of data -- ")
+                    return;
+                }
+
+                var _headers = [];
+                var _data =[];
+                for( var i in self.data[0])
+                {
+                    rows = self.data[0][i];
+
+                    for( var j = 0; j < rows.length; j++ )
+                    {
+                        _row = []
+                        for( var k in rows[j] )
+                        {
+                            if( _headers.indexOf( k ) == -1 )
+                            {
+
+                                _headers.push(k);
+                            }
+
+                            if( isNaN(rows[j][k]) )
+                            {
+                                _row.unshift(rows[j][k])
+                            } else
+                            {
+                                _row.push(rows[j][k])
+                            }
+                        }
+                        _data.push(_row)
+                    }
+                    self.computed_headers = _headers;
+                    self.computed_data = [_headers];
+
+                    for (var i = 0; i < _data.length; i++) {
+                                self.computed_data.push(_data[i]);
+                            }
+                }
+            },
+            draw: function() {
+
+                var _table = new google.visualization.arrayToDataTable(
+                    self.computed_data
+                );
+               /* for( var i = 0; i < self.computed_headers.length; i++ )
+                {
+                    _table.addColumn('string', self.computed_headers[i]);
+                }
+
+                _table.addRows(self.computed_data);*/
+
+
+                var chart = new google.visualization.PieChart(args.dom_element);
+
+                chart.draw(_table, {title:'sdfasasdf'});
+            },
+            display: function() {
+                this.compute_data();
+                this.draw();
+            }
+        };
+
+        this.bar_chart = {
+            compute_data: function() {
+
+                var _headers = ['Time'];
+                var _data = [];
+                    //
+                    for (var i in self.data[0]) {
+                        rows = self.data[0][i];
+
+                        var date = new Date(i*1000);
                         var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
                         var month = months[date.getMonth()];
-                        _data[i][j] = date.getFullYear() + '-' + month + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()
+                        i = date.getFullYear() + '-' + month + '-' + date.getDate();
+
+
+                        var _row = [i]
+
+                        for (var j = 0; j < rows.length; j++) {
+
+                            for (var k in rows[j]) {
+
+                                if (isNaN(rows[j][k])) {
+                                     if (_headers.indexOf(k) == -1) {
+
+
+                                            _headers.push(rows[j][k]);
+
+                                    }
+
+                                } else {
+                                    _row.push(rows[j][k])
+                                }
+                            }
+                        }
+                        _data = _row;
+                        self.computed_headers = _headers;
+                        self.computed_data = [_headers];
+                        self.computed_data.push(_data);
                     }
+            },
+            draw: function() {
 
-                    _row.push(_data[i][j])
+                var _table = new google.visualization.arrayToDataTable(
+                    self.computed_data
+                );
+               /* for( var i = 0; i < self.computed_headers.length; i++ )
+                {
+                    _table.addColumn('string', self.computed_headers[i]);
                 }
-               // _row[0] = _row.splice(1, 1, _row[0])[0];
-                _table.push( _row )
+
+                _table.addRows(self.computed_data);*/
+
+                var chart = new google.visualization.BarChart(args.dom_element);
+
+                chart.draw(_table, {title:'sdfasasdf'});
+            },
+            display: function() {
+                this.compute_data();
+                this.draw();
             }
-            console.log( _headers )
-
-                    chartBuilder.addChart({
-                        type: 'table',
-                        data: _table,
-                        headers: _headers,
-                        name: 'REPORT',
-                        tableSize: 10
-                        });
-                    clearInterval(_load )
+        };
 
 
-        }
-    );
+        jQuery.ajax({
+                    url: "http://192.168.100.4/api/v1/report/" + args.settings.report_id + "/",
+                    data: JSON.stringify(args.settings),
+                    type: "POST",
+                    dataType: 'json'
+                })
+                .done(function(result) {
+
+                    self.data = result.data;
+
+                    self[ args.settings.chart_type ].display();
+
+            })
 
     }
 
+    _self.addChart = function(args)
+    {
+        charts[(args.settings.report_id + '_' + args.settings.key + '_' + args.settings.chart_type)] = new draw_google_chart(args);
+    };
+
+
+    $.getScript("https://www.google.com/jsapi").done(function () {
+       google.load('visualization', '1', {packages: ['corechart','table'], callback: _self.init});
+    });
 }( window.chartBuilder = window.chartBuilder || {}, jQuery ));

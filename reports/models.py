@@ -118,11 +118,11 @@ class Report(models.Model):
             table = []
 
             for index, row in minor_data.iteritems():
-                table.append({index:row})
 
+                table.append({panel.items[0]: index, panel.items[1]: row})
+                #import ipdb; ipdb.set_trace()
 
             timestamp = (panel.minor_axis.max().to_pydatetime() - datetime(1970, 1, 1)).total_seconds()
-            import ipdb; ipdb.set_trace()
 
             tables.append({timestamp: table})
 
