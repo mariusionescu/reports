@@ -67,8 +67,6 @@ class Report(models.Model):
         if index:
             dataframe = pandas.DataFrame(rows, index=[r[index] for r in rows])
         else:
-            for row in rows:
-                row['timestamp'] = (timestamp - datetime(1970, 1, 1)).total_seconds()
             dataframe = pandas.DataFrame(rows)
         panel = pandas.Panel.from_dict({timestamp: dataframe}, orient='minor')
         panel.to_hdf(self.hdf_file, self.KEY, format='table', append=True)
@@ -111,16 +109,20 @@ class Report(models.Model):
 
             try:
                 column = aggregation.keys()[0]
+                print column
                 minor_data = getattr(panel[column], aggregation[column])(1)
-            except AttributeError:
+            except AttributeError as e:
+                print e
+                print 'ERROR'
                 return []
 
             table = []
-
+            print minor_data
             for index, row in minor_data.iteritems():
-
+                print index
+                print row
                 table.append({panel.items[0]: index, panel.items[1]: row})
-                #import ipdb; ipdb.set_trace()
+
 
             timestamp = (panel.minor_axis.max().to_pydatetime() - datetime(1970, 1, 1)).total_seconds()
 
@@ -133,11 +135,13 @@ class Report(models.Model):
                 minor_data = panel.minor_xs(key)
                 table = []
 
-                for index, row in minor_data.iterrows():
+                for index, row in minor_data.dropna().iterrows():
                     _row = {}
 
                     for column in minor_data.keys():
-                        _row[column] = row[column]
+
+                        if row[column]:
+                            _row[column] = row[column]
 
                     table.append(_row)
 

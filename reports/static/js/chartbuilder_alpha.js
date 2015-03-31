@@ -20,16 +20,17 @@
                 return
             }
 
-            _el = {
+            var _el = {
                 output: 'json',
                 start_date: report_tag.data('start_date'),
                 end_date: report_tag.data('end_date'),
-                aggregation: report_tag.data('aggregation'),
+                aggregation: report_tag.data('aggregation') ? report_tag.data('aggregation') : null,
                 chart_type: report_tag.data('charttype'),
                 key: report_tag.data('key'),
                 report_id: report_tag.data('id')
 
             };
+
 
             _self.addChart({
                 settings: _el,
@@ -45,6 +46,12 @@
         this.data = null;
         this.computed_data = [];
         this.computed_headers = [];
+
+        this.ts_to_time = function(timestamp) {
+            var date = new Date(timestamp * 1000);
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return date.getFullYear() + '-' + months[date.getMonth()] + '-' + date.getDate();
+        };
 
         this.data_table = {
             compute_data: function() {
@@ -121,7 +128,7 @@
                                 _headers.push(k);
                             }
 
-                            if( isNaN(rows[j][k]) )
+                            if( isNaN(rows[j][k]) || k == "timestamp")
                             {
                                 _row.unshift(rows[j][k])
                             } else
@@ -131,6 +138,7 @@
                         }
                         _data.push(_row)
                     }
+
                     self.computed_headers = _headers;
                     self.computed_data = [_headers];
 
@@ -144,13 +152,6 @@
                 var _table = new google.visualization.arrayToDataTable(
                     self.computed_data
                 );
-               /* for( var i = 0; i < self.computed_headers.length; i++ )
-                {
-                    _table.addColumn('string', self.computed_headers[i]);
-                }
-
-                _table.addRows(self.computed_data);*/
-
 
                 var chart = new google.visualization.PieChart(args.dom_element);
 
@@ -166,57 +167,131 @@
             compute_data: function() {
 
                 var _headers = ['Time'];
-                var _data = [];
-                    //
-                    for (var i in self.data[0]) {
-                        rows = self.data[0][i];
+                var _series = [];
+                for (var h in self.data){
+                    var _data = [];
 
-                        var date = new Date(i*1000);
-                        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-                        var month = months[date.getMonth()];
-                        i = date.getFullYear() + '-' + month + '-' + date.getDate();
+                    for (var i in self.data[h]) {
+                        rows = self.data[h][i];
 
+                        //var _row = [self.ts_to_time(i)]
+                        var _row = {};
 
-                        var _row = [i]
+                        _row[i] = []
 
                         for (var j = 0; j < rows.length; j++) {
-
+                            var _definer = {
+                                header: null,
+                                value: null,
+                            };
                             for (var k in rows[j]) {
-
-                                if (isNaN(rows[j][k])) {
-                                     if (_headers.indexOf(k) == -1) {
-
-
-                                            _headers.push(rows[j][k]);
-
+                                if(
+                                    isNaN(rows[j][k])
+                                )
+                                {
+                                    if( _headers.indexOf(rows[j][k]) == -1 )
+                                    {
+                                        _headers.push(rows[j][k]);
                                     }
+                                    _definer.header = rows[j][k]
+                                }
+                                else
+                                {
+                                    _definer.value = rows[j][k]
+                                }
+                            }
+                            _row[i].push( _definer )
+                        }
+                        _data = _row;
+                    }
 
-                                } else {
-                                    _row.push(rows[j][k])
+                    self.computed_headers = _headers;
+
+                    _series.push(_data);
+                }
+
+                self.computed_data = [_headers];
+                var create_bar_array = function(data, header)
+                {
+                    for( var i in data )
+                    {
+                        var _row_data = [self.ts_to_time(i)];
+
+                        for( var j = 1; j < _headers.length; j++) {
+                            var _not_found = true;
+                            for (var k = 0; k < data[i].length; k++) {
+
+                                if (_headers[j] == data[i][k].header) {
+                                    _row_data.push(data[i][k].value)
+                                    _not_found = false;
+                                }
+                            }
+
+                             if( _not_found )
+                             {
+                                 _row_data.push(0)
+                             }
+                        }
+
+                        self.computed_data.push(_row_data)
+                    };
+                }
+
+                for( var j in _series )
+                {
+                    create_bar_array(_series[j]);
+                }
+
+                return;
+                for( var i = 1; i < _headers.length; i++)
+                {
+                    for( var j = 0; j < _series.length; j++ )
+                    {
+                        if( i >= _series[j].length) {
+                            _series[j].push(0)
+                        }
+                    }
+
+                }
+
+                for( var i = 0; i < _series.length; i++)
+                {
+                    self.computed_data.push(_series[i])
+                }
+
+
+                for (var h in self.data) {
+                    for (var i in self.data[h]) {
+                        rows = self.data[h][i];65
+
+                        for (var j = 0; j < rows.length; j++) {
+                            for (var k in rows[j]) {
+                                if (
+                                    isNaN(rows[j][k])
+                                    && _headers.indexOf(rows[j][k]) == -1
+                                ) {
                                 }
                             }
                         }
-                        _data = _row;
-                        self.computed_headers = _headers;
-                        self.computed_data = [_headers];
-                        self.computed_data.push(_data);
                     }
+                }
             },
             draw: function() {
-
                 var _table = new google.visualization.arrayToDataTable(
                     self.computed_data
                 );
-               /* for( var i = 0; i < self.computed_headers.length; i++ )
-                {
-                    _table.addColumn('string', self.computed_headers[i]);
-                }
 
-                _table.addRows(self.computed_data);*/
+                 var options = {
+                  chart: {
+                    title: 'Company Performance',
+                    subtitle: 'Sales, Expenses, and Profit: 2014-2017',
+                  },
+                  orientation: 'horizontal', // Required for Material Bar Charts.
+                };
 
                 var chart = new google.visualization.BarChart(args.dom_element);
 
-                chart.draw(_table, {title:'sdfasasdf'});
+                chart.draw(_table, options);
             },
             display: function() {
                 this.compute_data();
@@ -224,17 +299,15 @@
             }
         };
 
-
         jQuery.ajax({
-                    url: "http://192.168.100.4/api/v1/report/" + args.settings.report_id + "/",
+                    //url: "http://192.168.100.4/api/v1/report/" + args.settings.report_id + "/",
+                    url: "http://reports.appixio.com/api/v1/report/" + args.settings.report_id + "/",
                     data: JSON.stringify(args.settings),
                     type: "POST",
                     dataType: 'json'
                 })
-                .done(function(result) {
-
+                .always(function(result) {
                     self.data = result.data;
-
                     self[ args.settings.chart_type ].display();
 
             })

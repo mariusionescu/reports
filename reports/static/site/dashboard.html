@@ -17,70 +17,9 @@
     <!--<link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,400,300,600,700' rel='stylesheet' type='text/css'>-->
 </head>
 <body>
-
-
-<div class="left">
-
-
-        <div class="report-data" data-id="1" data-key="1I46WLXRBM21GA24" data-charttype="pie_chart" data-aggregation='{"count":"sum"}'></div>
-        <div class="report-data" data-id="1" data-key="1I46WLXRBM21GA24" data-charttype="data_table" data-aggregation='{"count":"sum"}'></div>
-        <div class="report-data" data-id="1" data-key="1I46WLXRBM21GA24" data-charttype="bar_chart" data-aggregation='{"count":"sum"}'></div>
-
-
-</div>
-
-<div class="right">
-
-    <section style="display: block;">
-
-        <div class="title align-center">
-
-            <h2>Reports</h2>
-
-        </div>
-
-        <div class="form-box padded">
-            <h2>Features</h2>
-            <ul>
-                <li>Scalable</li>
-                <li>Easy to use</li>
-                <li>Straight forward integration</li>
-                <li>REST API</li>
-            </ul>
-
-            <h2>Push data</h2>
-                    <pre>
-DATA='{
-    "key": "AMJ1IG2N4UEJUR2K",
-    "rows": {
-        "label": "users",
-        "count": 10
-    }
-}'
-curl -XPUT --data "$DATA" http://reports.appixio.com/api/v1/report/1/
-                    </pre>
-            <h2>Visualize data</h2>
-                    <pre>
-DATA='{
-    "key": "AMJ1IG2N4UEJUR2K",
-    "aggregation": {"count":"mean"}
-}'
-curl -XPOST --data "$DATA" http://reports.appixio.com/api/v1/report/1/
-                    </pre>
-
-            <h2>Refresh your data</h2>
-                    <pre>
-DATA='{"key": "AMJ1IG2N4UEJUR2K"}'
-curl -XDELETE --data "$DATA" http://reports.appixio.com/api/v1/report/1/
-                    </pre>
-
-        </div>
-
-        <div class="shadow"></div>
-
-    </section>
-</div>
-
-
+        <div class="report-data" data-id="4" data-key="JSUNJW0F1N1MGETP" data-charttype="data_table" data-aggregation='{"count":"sum"}'></div>
+        <div class="report-data" data-id="6" data-key="JSUNJW0F1N1MGETP" data-charttype="bar_chart"></div>
+        <div class="report-data" data-id="4" data-key="JSUNJW0F1N1MGETP" data-charttype="data_table"></div>
+        <div class="report-data" data-id="5" data-key="JSUNJW0F1N1MGETP" data-charttype="bar_chart"></div>
 </body>
 </html>
