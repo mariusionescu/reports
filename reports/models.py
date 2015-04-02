@@ -96,37 +96,18 @@ class Report(models.Model):
             ]
         )
 
-        # table = []
-        # axis = 1 if aggregation else 0
-        # for column in panel.keys():
-        #    a = aggregation.get(column, 'max')
-        #    table.append({column: dict(getattr(panel[column], a)(axis))})
-        # return self.normalize_table(table)
-
         if aggregation:
             tables = []
-
-
-            try:
-                column = aggregation.keys()[0]
-                print column
-                minor_data = getattr(panel[column], aggregation[column])(1)
-            except AttributeError as e:
-                print e
-                print 'ERROR'
-                return []
-
             table = []
-            print minor_data
-            for index, row in minor_data.iteritems():
-                print index
-                print row
-                table.append({panel.items[0]: index, panel.items[1]: row})
 
+            for column in panel.keys():
+                a = aggregation.get(column, 'max')
+                table.append({column: dict(getattr(panel[column], a)(1))})
+                print list(getattr(panel[column], a)(1))
 
             timestamp = (panel.minor_axis.max().to_pydatetime() - datetime(1970, 1, 1)).total_seconds()
 
-            tables.append({timestamp: table})
+            tables.append({timestamp: self.normalize_table(table)})
 
             return tables
         else:

@@ -46,11 +46,11 @@
     reportDiv.setAttribute('class', 'report-data');
     reportDiv.setAttribute('data-id', reportConfig.id);
     reportDiv.setAttribute('data-key', reportConfig.key);
-    reportDiv.setAttribute('data-charttype', 'data_table');
+    reportDiv.setAttribute('data-charttype', 'pie_chart');
 
     var tagDiv = document.createElement('div');
 
-    tagDivHtml = '<div class="report-data" report-id="' + reportConfig.id + '" data-key="' + reportConfig.key + '" data-charttype="data_table"><' + '/div>';
+    tagDivHtml = '<div class="report-data" report-id="' + reportConfig.id + '" data-key="' + reportConfig.key + '" data-charttype="pie_chart"><' + '/div>';
     includeScript = '<script type="text/javascript" src="//reports.appixio.com/static/js/chartbuilder.js"><' + '/script>';
     tagDiv.innerHTML = escapeHtml(includeScript) + '\n' +  escapeHtml(tagDivHtml);
 

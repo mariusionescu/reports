@@ -72,7 +72,7 @@ class ReportAdmin(admin.ModelAdmin):
             '/static/js/modal.js'
         )
 
-    list_display = ('name', 'as_table')
+    list_display = ('name', 'as_table', 'as_bar_chart', 'as_pie_chart', 'as_line_chart')
 
     readonly_fields = ('user', 'hdf_file')
 
@@ -94,6 +94,27 @@ class ReportAdmin(admin.ModelAdmin):
 
     as_table.short_description = 'As table'
     as_table.allow_tags = True
+
+    def as_bar_chart(self, obj):
+        iframe = '/static/examples/as_bar_chart.html?report_id=%s&report_key=%s' % (obj.id, obj.key)
+        return """<a href="javascript: openModal('%s');">view</a>""" % iframe
+
+    as_bar_chart.short_description = 'As Bar'
+    as_bar_chart.allow_tags = True
+
+    def as_pie_chart(self, obj):
+        iframe = '/static/examples/as_pie_chart.html?report_id=%s&report_key=%s' % (obj.id, obj.key)
+        return """<a href="javascript: openModal('%s');">view</a>""" % iframe
+
+    as_pie_chart.short_description = 'As Pie'
+    as_pie_chart.allow_tags = True
+
+    def as_line_chart(self, obj):
+        iframe = '/static/examples/as_line_chart.html?report_id=%s&report_key=%s' % (obj.id, obj.key)
+        return """<a href="javascript: openModal('%s');">view</a>""" % iframe
+
+    as_line_chart.short_description = 'As Line'
+    as_line_chart.allow_tags = True
 
     actions = [reset]
 

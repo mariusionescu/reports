@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <title>Signup Landing Page</title>
     <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <link href="/static/css/style.css" rel="stylesheet">
     <style>
         pre {
@@ -46,14 +46,27 @@
                 <li>REST API</li>
             </ul>
 
-            <h2>Push data</h2>
+            <h2>Push data as time series</h2>
                     <pre>
 DATA='{
     "key": "AMJ1IG2N4UEJUR2K",
-    "rows": {
-        "label": "users",
-        "count": 10
-    }
+    "rows": [
+        {"animals": 30}
+    ],
+    "timestamp": 1427963205
+}'
+curl -XPUT --data "$DATA" http://reports.appixio.com/api/v1/report/1/
+                    </pre>
+            <h2>Push data as table series</h2>
+                    <pre>
+DATA='{
+    "key": "AMJ1IG2N4UEJUR2K",
+    "rows": [
+        {"animal": "bear", "count": 30},
+        {"animal": "cows", "count": 40}
+    ],
+    "index": "animal"
+    "timestamp": 1427963205
 }'
 curl -XPUT --data "$DATA" http://reports.appixio.com/api/v1/report/1/
                     </pre>
@@ -61,7 +74,9 @@ curl -XPUT --data "$DATA" http://reports.appixio.com/api/v1/report/1/
                     <pre>
 DATA='{
     "key": "AMJ1IG2N4UEJUR2K",
-    "aggregation": {"count":"mean"}
+    "aggregation": {"count":"sum"},
+    "start_date": 1427445305,
+    "end_data": 1427963705
 }'
 curl -XPOST --data "$DATA" http://reports.appixio.com/api/v1/report/1/
                     </pre>
