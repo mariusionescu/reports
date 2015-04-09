@@ -495,8 +495,6 @@
                     self.computed_data
                 );
 
-                console.log(self.computed_data)
-
                 var options = {
                     title: args.settings.name,
                     legend: { position: 'bottom' },
@@ -516,8 +514,8 @@
         };
 
         jQuery.ajax({
-                    url: "http://192.168.100.4/api/v1/report/" + args.settings.report_id + "/",
-                    //url: "http://reports.appixio.com/api/v1/report/" + args.settings.report_id + "/",
+                    //url: "http://192.168.100.4/api/v1/report/" + args.settings.report_id + "/",
+                    url: "http://reports.appixio.com/api/v1/report/" + args.settings.report_id + "/",
                     data: JSON.stringify(args.settings),
                     type: "POST",
                     dataType: 'json'})
