@@ -48,7 +48,7 @@ callback = function() {
                 this.ts_to_time = function (timestamp) {
                     var date = new Date(timestamp * 1000);
                     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    return date.getFullYear() + '-' + months[date.getMonth()] + '-' + date.getDate();
+                    return date.getUTCFullYear() + '-' + months[date.getUTCMonth()] + '-' + date.getUTCDate();
                 };
 
                 this.data_table = {
