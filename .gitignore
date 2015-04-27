@@ -9,3 +9,4 @@ nohup.out
 .vagrant
 /src
 src
+.DS_Store
