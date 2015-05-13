@@ -63,14 +63,34 @@ callback = function() {
                         for (var i in self.data[0]) {
                             var rows = self.data[0][i];
 
+                            //some headers may be missing
                             for (var j = 0; j < rows.length; j++) {
-                                _row = [];
+
                                 for (var k in rows[j]) {
                                     if (_headers.indexOf(k) == -1) {
-                                        _headers.push(k);
+                                        if(typeof(rows[j][k]) == "string")
+                                        {
+                                            _headers.unshift(k);
+
+                                        }
+                                        else
+                                        {
+                                            _headers.push(k);
+                                        }
+                                    }
+                                }
+                            }
+
+                            for (var j = 0; j < rows.length; j++) {
+                                _row = [];
+                                for (var k in _headers) {
+                                    if (rows[j][_headers[k]]) {
+                                        _row.push(rows[j][_headers[k]].toString())
+                                    }
+                                    else {
+                                        _row.push('0')
                                     }
 
-                                    _row.push(rows[j][k].toString())
                                 }
                                 _data.push(_row)
                             }
