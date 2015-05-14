@@ -85,6 +85,8 @@ class ReportView(View):
         try:
             self.data = self.request.to_dict()
         except ValueError:
+            import ipdb; ipdb.set_trace()
+            print self.request
             raise InvalidPayload
 
         api_key = self.data.get('key')
@@ -111,6 +113,7 @@ class ReportView(View):
         unix_time = self.data.get('timestamp')
         if unix_time:
             timestamp = datetime.fromtimestamp(unix_time)
+            print timestamp
         else:
             timestamp = None
 
@@ -143,6 +146,9 @@ class ReportView(View):
             end_date = datetime.fromtimestamp(end_unix_time)
         else:
             end_date = None
+
+        print start_date
+        print end_date
         try:
             data = self.report.read(aggregation, start_date, end_date)
         except KeyError as e:
@@ -155,7 +161,9 @@ class ReportView(View):
         if output == 'json':
             json_request = JSONRequest.from_dict({
                 'success': True,
-                'data': data
+                'data': data['tables'],
+                'start_date': data['start_date'],
+                'end_date': data['end_date']
             })
             return json_request.to_http()
         elif output == 'javascript':

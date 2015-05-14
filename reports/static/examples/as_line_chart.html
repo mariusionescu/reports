@@ -49,7 +49,8 @@
     var tagDiv = document.createElement('div');
 
     tagDivHtml = '<div class="report-data" data-id="' + reportConfig.id + '" data-key="' + reportConfig.key + '" data-charttype="line_chart"><' + '/div>';
-    includeScript = '<script type="text/javascript" src="//reports.appixio.com/static/js/chartbuilder.js"><' + '/script>';
+    includeScript = '<script type="text/javascript" src="//192.168.100.4/static/js/chartbuilder.js"><' + '/script>';
+    //includeScript = '<script type="text/javascript" src="//reports.appixio.com/static/js/chartbuilder.js"><' + '/script>';
     tagDiv.innerHTML = escapeHtml(includeScript) + '\n' +  escapeHtml(tagDivHtml);
 
     var tagMainDiv = document.getElementById("tag");

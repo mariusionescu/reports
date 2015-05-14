@@ -51,6 +51,12 @@ callback = function() {
                     return date.getUTCFullYear() + '-' + months[date.getUTCMonth()] + '-' + date.getUTCDate();
                 };
 
+                this.get_calendar_time = function (timestamp) {
+                    var date = new Date(timestamp * 1000);
+                    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return date.getUTCFullYear() + '-' + months[date.getUTCMonth()] + '-' + date.getUTCDate();
+                };
+
                 this.data_table = {
                     compute_data: function () {
                         if (self.data.length > 1) {
@@ -65,13 +71,11 @@ callback = function() {
 
                             //some headers may be missing
                             for (var j = 0; j < rows.length; j++) {
-
                                 for (var k in rows[j]) {
                                     if (_headers.indexOf(k) == -1) {
                                         if(typeof(rows[j][k]) == "string")
                                         {
                                             _headers.unshift(k);
-
                                         }
                                         else
                                         {
@@ -90,7 +94,6 @@ callback = function() {
                                     else {
                                         _row.push('0')
                                     }
-
                                 }
                                 _data.push(_row)
                             }
@@ -325,13 +328,82 @@ callback = function() {
                             orientation: 'horizontal', // Required for Material Bar Charts.
                         };
 
-                        var chart = new google.visualization.BarChart(args.dom_element);
+                        if( self.chart )
+                        {
+                            self.chart.draw(_table, options);
+                            return
+                        }
 
-                        chart.draw(_table, options);
+                        self.chart_report_element = document.createElement("div");
+                        args.dom_element.appendChild(self.chart_report_element );
+                        console.log( args.dom_element, self.chart_report_element)
+                        self.chart = new google.visualization.BarChart(self.chart_report_element);
+
+                        self.chart.draw(_table, options);
                     },
                     display: function () {
                         this.compute_data();
+                        this.draw_datepicker();
                         this.draw();
+                    },
+                    draw_datepicker: function () {
+
+                        if( self.datapicker_container )
+                        {
+                            self.start_datepicker_container.datepicker({
+                                dateFormat: 'yy-M-dd'
+                            }).datepicker( "setDate", self.ts_to_time(self.start_date) );
+
+                            self.end_datepicker_container.datepicker({
+                                dateFormat: 'yy-M-dd'
+                            }).datepicker( "setDate", self.ts_to_time(self.end_date) );
+
+                            console.log( self.start_datepicker_container.datepicker("getDate") )
+                            console.log( self.end_datepicker_container.datepicker("getDate") )
+
+                            return
+                        }
+
+                        self.datapicker_container = jQuery('<div/>', {
+                            class: 'datapicker_container',
+                            style: 'background:white;'
+                        }).appendTo(args.dom_element);
+                        jQuery('<label/>', {
+                            text: 'Start date: '
+                        }).appendTo(self.datapicker_container);
+
+                        self.start_datepicker_container = jQuery('<input/>', {
+                            type: 'text',
+                        }).appendTo(self.datapicker_container);
+
+                        self.start_datepicker_container.datepicker({
+                            dateFormat: 'yy-M-dd'
+                        }).datepicker( "setDate", self.ts_to_time(self.start_date) );
+
+                        jQuery('<label/>', {
+                            text: 'End date: '
+                        }).appendTo(self.datapicker_container);
+
+                        self.end_datepicker_container = jQuery('<input/>', {
+                            type: 'text',
+                        }).appendTo(self.datapicker_container);
+
+                        self.end_datepicker_container.datepicker({
+                            dateFormat: 'yy-M-dd'
+                        }).datepicker( "setDate", self.ts_to_time(self.end_date) );
+                        var filter_button = jQuery('<button/>', {
+                            text: 'Filter'
+                        }).appendTo(self.datapicker_container);
+
+                        console.log( self.start_datepicker_container.datepicker("getDate") )
+                        console.log( self.end_datepicker_container.datepicker("getDate") )
+
+                        filter_button.click(function() {
+                            args.settings.start_date = new Date(self.start_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 00:00:00 UTC').getTime()/1000,
+                            args.settings.end_date = new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59 UTC').getTime()/1000
+                            console.log( new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59') )
+                            self.get_data()
+                        })
                     }
                 };
 
@@ -497,17 +569,25 @@ callback = function() {
                     }
                 };
 
-                jQuery.ajax({
-                    //url: "http://192.168.100.4/api/v1/report/" + args.settings.report_id + "/",
-                    url: "http://reports.appixio.com/api/v1/report/" + args.settings.report_id + "/",
-                    data: JSON.stringify(args.settings),
-                    type: "POST",
-                    dataType: 'json'
-                })
-                    .always(function (result) {
-                        self.data = result.data;
-                        self[args.settings.chart_type].display();
+                this.get_data = function()
+                {
+                    jQuery.ajax({
+                        //url: "http://192.168.100.4/api/v1/report/" + args.settings.report_id + "/",
+                        url: "http://reports.appixio.com/api/v1/report/" + args.settings.report_id + "/",
+                        data: JSON.stringify(args.settings),
+                        type: "POST",
+                        dataType: 'json'
                     })
+                        .always(function (result) {
+                            console.log( result)
+                            self.data = result.data;
+                            self.start_date = result.start_date;
+                            self.end_date = result.end_date;
+                            self[args.settings.chart_type].display();
+                        })
+                }
+
+                this.get_data()
             }
 
             _self.addChart = function (args) {
@@ -525,9 +605,29 @@ if(!window.jQuery)
 {
     var script = document.createElement('script');
     script.type = "text/javascript";
+    //script.src = "http://192.168.100.4/static/admin/js/jquery.js";
     script.src = "http://reports.appixio.com/static/admin/js/jquery.js";
     document.getElementsByTagName('head')[0].appendChild(script);
-    script.onload = callback;
+    script.onload =
+        function(){
+            link = document.createElement('link');
+            //link.href = "http://192.168.100.4/static/css/jquery-ui.min.css";
+            link.href = "http://reports.appixio.com/static/css/jquery-ui.min.css";
+            link.type = "text/css";
+            link.rel = "stylesheet";
+            link.media = "screen,print";
+            document.getElementsByTagName( "head" )[0].appendChild( link );
+
+            link.onload = function()
+            {
+                var script = document.createElement('script');
+                script.type = "text/javascript";
+                //script.src = "http://192.168.100.4/static/js/jquery-ui.min.js";
+                script.src = "http://reports.appixio.com/static/admin/js/jquery-ui.js";
+                document.getElementsByTagName('head')[0].appendChild(script);
+                script.onload = callback;
+            }
+        }
 }
 else
 {

@@ -4,6 +4,7 @@ from django.conf import settings
 import pandas
 import os
 from datetime import datetime, timedelta
+from time import mktime
 
 
 class ApiKey(models.Model):
@@ -109,7 +110,11 @@ class Report(models.Model):
 
             tables.append({timestamp: self.normalize_table(table)})
 
-            return tables
+            return {
+                'tables': tables,
+                'start_date': mktime(start_date.timetuple()),
+                'end_date': mktime(end_date.timetuple()),
+            }
         else:
             tables = []
             for key in panel.minor_axis:
@@ -130,7 +135,11 @@ class Report(models.Model):
 
                 tables.append({timestamp: table})
 
-            return tables
+            return {
+                'tables': tables,
+                'start_date': mktime(start_date.timetuple()),
+                'end_date': mktime(end_date.timetuple()),
+            }
 
 
     @staticmethod
