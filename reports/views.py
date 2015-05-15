@@ -85,8 +85,6 @@ class ReportView(View):
         try:
             self.data = self.request.to_dict()
         except ValueError:
-            import ipdb; ipdb.set_trace()
-            print self.request
             raise InvalidPayload
 
         api_key = self.data.get('key')

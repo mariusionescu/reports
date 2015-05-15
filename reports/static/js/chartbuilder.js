@@ -65,6 +65,7 @@ callback = function() {
                         }
 
                         var _headers = [];
+                        var _preheaders = [];
                         var _data = [];
                         for (var i in self.data[0]) {
                             var rows = self.data[0][i];
@@ -72,27 +73,30 @@ callback = function() {
                             //some headers may be missing
                             for (var j = 0; j < rows.length; j++) {
                                 for (var k in rows[j]) {
-                                    if (_headers.indexOf(k) == -1) {
+                                    if (_preheaders.indexOf(k) == -1) {
                                         if(typeof(rows[j][k]) == "string")
                                         {
-                                            _headers.unshift(k);
+                                            _preheaders.unshift(k);
+                                            _headers.unshift({name: k, type: 'string'});
                                         }
                                         else
                                         {
-                                            _headers.push(k);
+                                            _preheaders.push(k);
+                                            _headers.push({name: k, type: 'number'});
                                         }
                                     }
                                 }
                             }
+                            console.log( _headers )
 
                             for (var j = 0; j < rows.length; j++) {
                                 _row = [];
                                 for (var k in _headers) {
-                                    if (rows[j][_headers[k]]) {
-                                        _row.push(rows[j][_headers[k]].toString())
+                                    if (rows[j][_headers[k].name]) {
+                                        _row.push(rows[j][_headers[k].name])
                                     }
                                     else {
-                                        _row.push('0')
+                                        _row.push(0)
                                     }
                                 }
                                 _data.push(_row)
@@ -104,14 +108,17 @@ callback = function() {
                     draw: function () {
                         var _table = new google.visualization.DataTable();
                         for (var i = 0; i < self.computed_headers.length; i++) {
-                            _table.addColumn('string', self.computed_headers[i]);
+                            _table.addColumn(self.computed_headers[i].type, self.computed_headers[i].name);
                         }
-
+                        //console.log( self.computed_headers)
+                        //console.log( self.computed_data)
                         _table.addRows(self.computed_data);
 
                         var options = {
                             title: args.settings.name,
-                            showRowNumber: true
+                            showRowNumber: true,
+                            page: 'enable',
+                            pageSize: 25
                         };
 
                         var table = new google.visualization.Table(args.dom_element);
@@ -167,7 +174,7 @@ callback = function() {
                         );
 
                         var options = {
-                            title: args.settings.name
+                            title: args.settings.name,
                         };
 
                         var chart = new google.visualization.PieChart(args.dom_element);
@@ -326,6 +333,7 @@ callback = function() {
                             title: args.settings.name,
                             subtitle: 'Sales, Expenses, and Profit: 2014-2017',
                             orientation: 'horizontal', // Required for Material Bar Charts.
+                            width: 800
                         };
 
                         if( self.chart )
@@ -335,6 +343,7 @@ callback = function() {
                         }
 
                         self.chart_report_element = document.createElement("div");
+                        //self.chart_report_element.setAttribute('class', 'report_chart')
                         args.dom_element.appendChild(self.chart_report_element );
                         self.chart = new google.visualization.BarChart(self.chart_report_element);
 
@@ -546,7 +555,8 @@ callback = function() {
                         var options = {
                             title: args.settings.name,
                             legend: {position: 'bottom'},
-                            pointSize: 10
+                            pointSize: 10,
+                            width: 800
                         };
 
 
