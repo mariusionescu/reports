@@ -336,7 +336,6 @@ callback = function() {
 
                         self.chart_report_element = document.createElement("div");
                         args.dom_element.appendChild(self.chart_report_element );
-                        console.log( args.dom_element, self.chart_report_element)
                         self.chart = new google.visualization.BarChart(self.chart_report_element);
 
                         self.chart.draw(_table, options);
@@ -357,9 +356,6 @@ callback = function() {
                             self.end_datepicker_container.datepicker({
                                 dateFormat: 'yy-M-dd'
                             }).datepicker( "setDate", self.ts_to_time(self.end_date) );
-
-                            console.log( self.start_datepicker_container.datepicker("getDate") )
-                            console.log( self.end_datepicker_container.datepicker("getDate") )
 
                             return
                         }
@@ -395,13 +391,9 @@ callback = function() {
                             text: 'Filter'
                         }).appendTo(self.datapicker_container);
 
-                        console.log( self.start_datepicker_container.datepicker("getDate") )
-                        console.log( self.end_datepicker_container.datepicker("getDate") )
-
                         filter_button.click(function() {
                             args.settings.start_date = new Date(self.start_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 00:00:00 UTC').getTime()/1000,
                             args.settings.end_date = new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59 UTC').getTime()/1000
-                            console.log( new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59') )
                             self.get_data()
                         })
                     }
@@ -557,14 +549,80 @@ callback = function() {
                             pointSize: 10
                         };
 
-                        var view = new google.visualization.DataView(_table);
 
-                        var chart = new google.visualization.LineChart(args.dom_element);
+                        if( self.chart )
+                        {
+                            self.view = new google.visualization.DataView(_table);
+                            self.chart.draw(_table, options);
+                            return
+                        }
 
-                        chart.draw(_table, options);
+                        self.view = new google.visualization.DataView(_table);
+
+                        self.chart_report_element = document.createElement("div");
+                        args.dom_element.appendChild(self.chart_report_element );
+
+                        self.chart = new google.visualization.LineChart(self.chart_report_element);
+
+                        //var chart = new google.visualization.LineChart(args.dom_element);
+
+                        self.chart.draw(_table, options);
+                    },
+                    draw_datepicker: function () {
+
+                        if( self.datapicker_container )
+                        {
+                            self.start_datepicker_container.datepicker({
+                                dateFormat: 'yy-M-dd'
+                            }).datepicker( "setDate", self.ts_to_time(self.start_date) );
+
+                            self.end_datepicker_container.datepicker({
+                                dateFormat: 'yy-M-dd'
+                            }).datepicker( "setDate", self.ts_to_time(self.end_date) );
+
+                            return
+                        }
+
+                        self.datapicker_container = jQuery('<div/>', {
+                            class: 'datapicker_container',
+                            style: 'background:white;'
+                        }).appendTo(args.dom_element);
+                        jQuery('<label/>', {
+                            text: 'Start date: '
+                        }).appendTo(self.datapicker_container);
+
+                        self.start_datepicker_container = jQuery('<input/>', {
+                            type: 'text',
+                        }).appendTo(self.datapicker_container);
+
+                        self.start_datepicker_container.datepicker({
+                            dateFormat: 'yy-M-dd'
+                        }).datepicker( "setDate", self.ts_to_time(self.start_date) );
+
+                        jQuery('<label/>', {
+                            text: 'End date: '
+                        }).appendTo(self.datapicker_container);
+
+                        self.end_datepicker_container = jQuery('<input/>', {
+                            type: 'text',
+                        }).appendTo(self.datapicker_container);
+
+                        self.end_datepicker_container.datepicker({
+                            dateFormat: 'yy-M-dd'
+                        }).datepicker( "setDate", self.ts_to_time(self.end_date) );
+                        var filter_button = jQuery('<button/>', {
+                            text: 'Filter'
+                        }).appendTo(self.datapicker_container);
+
+                        filter_button.click(function() {
+                            args.settings.start_date = new Date(self.start_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 00:00:00 UTC').getTime()/1000,
+                            args.settings.end_date = new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59 UTC').getTime()/1000
+                            self.get_data()
+                        })
                     },
                     display: function () {
                         this.compute_data();
+                        this.draw_datepicker();
                         this.draw();
                     }
                 };
@@ -579,7 +637,6 @@ callback = function() {
                         dataType: 'json'
                     })
                         .always(function (result) {
-                            console.log( result)
                             self.data = result.data;
                             self.start_date = result.start_date;
                             self.end_date = result.end_date;
@@ -623,7 +680,7 @@ if(!window.jQuery)
                 var script = document.createElement('script');
                 script.type = "text/javascript";
                 //script.src = "http://192.168.100.4/static/js/jquery-ui.min.js";
-                script.src = "http://reports.appixio.com/static/admin/js/jquery-ui.js";
+                script.src = "http://reports.appixio.com/static/js/jquery-ui.min.js";
                 document.getElementsByTagName('head')[0].appendChild(script);
                 script.onload = callback;
             }
