@@ -104,7 +104,6 @@ class Report(models.Model):
             for column in panel.keys():
                 a = aggregation.get(column, 'max')
                 table.append({column: dict(getattr(panel[column], a)(1))})
-                print list(getattr(panel[column], a)(1))
 
             timestamp = (panel.minor_axis.max().to_pydatetime() - datetime(1970, 1, 1)).total_seconds()
 

@@ -38,7 +38,7 @@ class JSONRequest(object):
 
     def convert(self, data):
         if isinstance(data, basestring):
-            return str(data)
+            return data.encode('ascii', 'replace')
         elif isinstance(data, collections.Mapping):
             return dict(map(self.convert, data.iteritems()))
         elif isinstance(data, collections.Iterable):
@@ -80,7 +80,6 @@ class ReportView(View):
         self.request = None
 
     def init(self, request, report_id):
-
         self.request = JSONRequest.from_request(request)
         try:
             self.data = self.request.to_dict()
@@ -111,7 +110,6 @@ class ReportView(View):
         unix_time = self.data.get('timestamp')
         if unix_time:
             timestamp = datetime.fromtimestamp(unix_time)
-            print timestamp
         else:
             timestamp = None
 
@@ -145,8 +143,6 @@ class ReportView(View):
         else:
             end_date = None
 
-        print start_date
-        print end_date
         try:
             data = self.report.read(aggregation, start_date, end_date)
         except KeyError as e:
