@@ -20,17 +20,30 @@ callback = function() {
                         return
                     }
 
+                    if( !report_tag.data('end_date') )
+                    {
+                        var end_date = new Date()
+                        end_date.setDate(end_date.getDate() - 1)
+                    }
+
+                    if( !report_tag.data('start_date') )
+                    {
+
+                        var start_date = new Date()
+                        start_date.setDate(start_date.getDate() - 8)
+                    }
+
                     var _el = {
                         output: 'json',
-                        start_date: report_tag.data('start_date'),
-                        end_date: report_tag.data('end_date'),
-                        aggregation: report_tag.data('aggregation') ? report_tag.data('aggregation') : null,
+                        start_date: report_tag.data('start_date') ? report_tag.data('start_date') : ( report_tag.data('charttype') == 'data_table' ? new Date( end_date.toDateString() + ' 00:00:00 UTC').getTime()/1000 : new Date( start_date.toDateString() + ' 00:00:00 UTC').getTime()/1000 ),
+                        end_date: report_tag.data('end_date') ? report_tag.data('end_date') : new Date( end_date.toDateString() + ' 23:59:59 UTC').getTime()/1000,
+                        aggregation: report_tag.data('aggregation'),
                         chart_type: report_tag.data('charttype'),
                         key: report_tag.data('key'),
                         name: report_tag.data('name'),
+                        index: report_tag.data('index'),
                         report_id: report_tag.data('id')
                     };
-
                     _self.addChart({
                         settings: _el,
                         dom_element: report_tag[0]
@@ -87,8 +100,6 @@ callback = function() {
                                     }
                                 }
                             }
-                            console.log( _headers )
-
                             for (var j = 0; j < rows.length; j++) {
                                 _row = [];
                                 for (var k in _headers) {
@@ -110,8 +121,7 @@ callback = function() {
                         for (var i = 0; i < self.computed_headers.length; i++) {
                             _table.addColumn(self.computed_headers[i].type, self.computed_headers[i].name);
                         }
-                        //console.log( self.computed_headers)
-                        //console.log( self.computed_data)
+
                         _table.addRows(self.computed_data);
 
                         var options = {
@@ -184,7 +194,15 @@ callback = function() {
                             args.settings.start_date = new Date(self.start_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 00:00:00 UTC').getTime()/1000,
                             args.settings.end_date = new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59 UTC').getTime()/1000
                             args.settings.aggregation = {};
-                            args.settings.aggregation[ self.computed_headers[0] ] = 'sum';
+
+                            for( var i in self.computed_headers )
+                            {
+                                if( self.computed_headers[i].type == 'number' )
+                                {
+                                    args.settings.aggregation[ self.computed_headers[i].name ] = 'sum';
+                                }
+                            }
+
                             self.get_data()
                         })
                     },
@@ -475,7 +493,6 @@ callback = function() {
 
                 this.line_chart = {
                     compute_data: function () {
-
                         var _headers = ['Time'],
                             _series = [];
                         for (var h in self.data) {
@@ -613,10 +630,8 @@ callback = function() {
                         }
                     },
                     draw: function () {
-                        console.log( self.computed_data[0] )
                         for( var i = 0; i < self.computed_data[0].length; i++ )
                         {
-                            console.log( self.computed_data[0][i] )
                             if( self.computed_data[0][i] == 'Churn' )
                             {
                                 self.computed_data[0][i] = 'Uninstalls'
@@ -705,8 +720,15 @@ callback = function() {
                         })
                     },
                     display: function () {
-                        this.compute_data();
                         this.draw_datepicker();
+                        console.log( self.data, self.data.length )
+                        if( self.data.length == 0 )
+                        {
+                            return;
+                        }
+                        //args.dom_element.remove(self.chart_report_element)
+                        this.compute_data();
+                        console.log( 243 )
                         this.draw();
                     }
                 };
@@ -721,6 +743,7 @@ callback = function() {
                         dataType: 'json'
                     })
                         .always(function (result) {
+                            console.log( self.data )
                             self.data = result.data;
                             self.start_date = result.start_date;
                             self.end_date = result.end_date;
@@ -772,5 +795,21 @@ if(!window.jQuery)
 }
 else
 {
-    callback();
+    link = document.createElement('link');
+            //link.href = "http://192.168.100.4/static/css/jquery-ui.min.css";
+            link.href = "http://reports.appixio.com/static/css/jquery-ui.min.css";
+            link.type = "text/css";
+            link.rel = "stylesheet";
+            link.media = "screen,print";
+            document.getElementsByTagName( "head" )[0].appendChild( link );
+
+            link.onload = function()
+            {
+                var script = document.createElement('script');
+                script.type = "text/javascript";
+                //script.src = "http://192.168.100.4/static/js/jquery-ui.min.js";
+                script.src = "http://reports.appixio.com/static/js/jquery-ui.min.js";
+                document.getElementsByTagName('head')[0].appendChild(script);
+                script.onload = callback;
+            }
 }
