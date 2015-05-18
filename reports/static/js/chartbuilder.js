@@ -121,11 +121,76 @@ callback = function() {
                             pageSize: 25
                         };
 
-                        var table = new google.visualization.Table(args.dom_element);
-                        table.draw(_table, options);
+
+                        if( self.chart )
+                        {
+                            self.chart.draw(_table, options);
+                            return
+                        }
+
+                        self.chart_report_element = document.createElement("div");
+                        self.chart_report_element.setAttribute('class', 'report_chart')
+                        args.dom_element.appendChild(self.chart_report_element);
+                        self.chart = new google.visualization.Table(self.chart_report_element);
+
+                        self.chart.draw(_table, options);
+                    },
+                    draw_datepicker: function () {
+
+                        if( self.datapicker_container )
+                        {
+                            self.start_datepicker_container.datepicker({
+                                dateFormat: 'yy-M-dd'
+                            }).datepicker( "setDate", self.ts_to_time(self.start_date) );
+
+                            self.end_datepicker_container.datepicker({
+                                dateFormat: 'yy-M-dd'
+                            }).datepicker( "setDate", self.ts_to_time(self.end_date) );
+
+                            return
+                        }
+
+                        self.datapicker_container = jQuery('<div/>', {
+                            class: 'datapicker_container',
+                        }).appendTo(args.dom_element);
+                        jQuery('<label/>', {
+                            text: 'Start date: '
+                        }).appendTo(self.datapicker_container);
+
+                        self.start_datepicker_container = jQuery('<input/>', {
+                            type: 'text',
+                        }).appendTo(self.datapicker_container);
+
+                        self.start_datepicker_container.datepicker({
+                            dateFormat: 'yy-M-dd'
+                        }).datepicker( "setDate", self.ts_to_time(self.start_date) );
+
+                        jQuery('<label/>', {
+                            text: 'End date: '
+                        }).appendTo(self.datapicker_container);
+
+                        self.end_datepicker_container = jQuery('<input/>', {
+                            type: 'text',
+                        }).appendTo(self.datapicker_container);
+
+                        self.end_datepicker_container.datepicker({
+                            dateFormat: 'yy-M-dd'
+                        }).datepicker( "setDate", self.ts_to_time(self.end_date) );
+                        var filter_button = jQuery('<button/>', {
+                            text: 'Filter'
+                        }).appendTo(self.datapicker_container);
+
+                        filter_button.click(function() {
+                            args.settings.start_date = new Date(self.start_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 00:00:00 UTC').getTime()/1000,
+                            args.settings.end_date = new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59 UTC').getTime()/1000
+                            args.settings.aggregation = {};
+                            args.settings.aggregation[ self.computed_headers[0] ] = 'sum';
+                            self.get_data()
+                        })
                     },
                     display: function () {
                         this.compute_data();
+                        this.draw_datepicker();
                         this.draw();
                     }
                 };
@@ -548,6 +613,15 @@ callback = function() {
                         }
                     },
                     draw: function () {
+                        console.log( self.computed_data[0] )
+                        for( var i = 0; i < self.computed_data[0].length; i++ )
+                        {
+                            console.log( self.computed_data[0][i] )
+                            if( self.computed_data[0][i] == 'Churn' )
+                            {
+                                self.computed_data[0][i] = 'Uninstalls'
+                            }
+                        }
                         var _table = new google.visualization.arrayToDataTable(
                             self.computed_data
                         );
