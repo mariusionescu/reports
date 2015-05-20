@@ -42,6 +42,7 @@ callback = function() {
                         key: report_tag.data('key'),
                         name: report_tag.data('name'),
                         index: report_tag.data('index'),
+                        autoload: report_tag.data('autoload'),
                         report_id: report_tag.data('id')
                     };
                     _self.addChart({
@@ -139,7 +140,7 @@ callback = function() {
                         }
 
                         self.chart_report_element = document.createElement("div");
-                        self.chart_report_element.setAttribute('class', 'report_chart')
+                        self.chart_report_element.setAttribute("class", "report_chart");
                         args.dom_element.appendChild(self.chart_report_element);
                         self.chart = new google.visualization.Table(self.chart_report_element);
 
@@ -204,6 +205,14 @@ callback = function() {
                             }
 
                             self.get_data()
+                        })
+
+                        var download_button = jQuery('<button/>', {
+                            text: 'Export to CSV'
+                        }).appendTo(self.datapicker_container);
+
+                        download_button.click(function() {
+                            self.download();
                         })
                     },
                     display: function () {
@@ -414,9 +423,7 @@ callback = function() {
 
                         var options = {
                             title: args.settings.name,
-                            subtitle: 'Sales, Expenses, and Profit: 2014-2017',
                             orientation: 'horizontal', // Required for Material Bar Charts.
-                            width: 800
                         };
 
                         if( self.chart )
@@ -426,7 +433,7 @@ callback = function() {
                         }
 
                         self.chart_report_element = document.createElement("div");
-                        //self.chart_report_element.setAttribute('class', 'report_chart')
+                        self.chart_report_element.setAttribute('class', 'report_chart')
                         args.dom_element.appendChild(self.chart_report_element );
                         self.chart = new google.visualization.BarChart(self.chart_report_element);
 
@@ -487,6 +494,14 @@ callback = function() {
                             args.settings.start_date = new Date(self.start_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 00:00:00 UTC').getTime()/1000,
                             args.settings.end_date = new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59 UTC').getTime()/1000
                             self.get_data()
+                        })
+
+                        var download_button = jQuery('<button/>', {
+                            text: 'Export to CSV'
+                        }).appendTo(self.datapicker_container);
+
+                        download_button.click(function() {
+                            self.download();
                         })
                     }
                 };
@@ -644,10 +659,8 @@ callback = function() {
                         var options = {
                             title: args.settings.name,
                             legend: {position: 'bottom'},
-                            pointSize: 10,
-                            width: 800
+                            pointSize: 10
                         };
-
 
                         if( self.chart )
                         {
@@ -659,6 +672,7 @@ callback = function() {
                         self.view = new google.visualization.DataView(_table);
 
                         self.chart_report_element = document.createElement("div");
+                        self.chart_report_element.setAttribute("class", "report_chart");
                         args.dom_element.appendChild(self.chart_report_element );
 
                         self.chart = new google.visualization.LineChart(self.chart_report_element);
@@ -718,22 +732,69 @@ callback = function() {
                             args.settings.end_date = new Date(self.end_datepicker_container.datepicker({ dateFormat: 'yy-mm-dd' }).val() + ' 23:59:59 UTC').getTime()/1000
                             self.get_data()
                         })
+
+                        var download_button = jQuery('<button/>', {
+                            text: 'Export to CSV'
+                        }).appendTo(self.datapicker_container);
+
+                        download_button.click(function() {
+                            self.download();
+                        })
                     },
                     display: function () {
                         this.draw_datepicker();
-                        console.log( self.data, self.data.length )
                         if( self.data.length == 0 )
                         {
                             return;
                         }
                         //args.dom_element.remove(self.chart_report_element)
                         this.compute_data();
-                        console.log( 243 )
                         this.draw();
                     }
                 };
 
-                this.get_data = function()
+                function convertJSONtoCSV(data) {
+                    var array = typeof data != 'object' ? JSON.parse(data) : data,
+                        str = '';
+
+                    for (var i = 0; i < array.length; i++) {
+                        var line = '';
+                        for (var index in array[i]) {
+                            line += array[i][index] + ',';
+                        }
+                        // Here is an example where you would wrap the values in double quotes
+                        /*for (var index in array[i]) {
+                         line += '"' + array[i][index] + '",';
+                         }*/
+                        line.slice(0, line.Length - 1);
+                        str += line + '\r\n';
+                    }
+                    return str
+                }
+
+                this.download = function () {
+                    if( args.settings.chart_type == 'data_table' ) {
+                        var _data = [[]]
+                        for (var i = 0; i < self.computed_headers.length; i++) {
+                            _data[0].push(self.computed_headers[i].name)
+                        }
+                        for (var i = 0; i < self.computed_data.length; i++) {
+                            _data.push(self.computed_data[i])
+                        }
+                    }
+                    else
+                    {
+                        _data = self.computed_data
+                    }
+                    //self.computed_data.unshift(self.computed_headers))
+                    var link = document.createElement("a");
+                    link.setAttribute("href", "data:text/csv;charset=utf-8," + escape(convertJSONtoCSV(_data)));
+                    link.setAttribute("download", "Report_" + args.settings.report_id);
+
+                    link.click();
+                };
+
+                this.load = this.get_data = function()
                 {
                     jQuery.ajax({
                         //url: "http://192.168.100.4/api/v1/report/" + args.settings.report_id + "/",
@@ -743,19 +804,47 @@ callback = function() {
                         dataType: 'json'
                     })
                         .always(function (result) {
-                            console.log( self.data )
                             self.data = result.data;
                             self.start_date = result.start_date;
                             self.end_date = result.end_date;
                             self[args.settings.chart_type].display();
-                        })
-                }
+                            self.chart_object = self[args.settings.chart_type];
 
-                this.get_data()
+                            if( _self._isLoaded )
+                            {
+                                return
+                            }
+
+                            self._isLoaded = true;
+
+                            self.load = function(){
+                                return false;
+                            };
+
+                        })
+                };
+
+                if( args.settings.autoload )
+                {
+                    this.load()
+                }
             }
 
             _self.addChart = function (args) {
                 charts[(args.settings.report_id + '_' + args.settings.key + '_' + args.settings.chart_type)] = new draw_google_chart(args);
+            };
+
+            _self.getChart = function (args) {
+                if( args.tag )
+                {
+                    var _el = {
+                        chart_type: args.tag.data('charttype'),
+                        key: args.tag.data('key'),
+                        report_id: args.tag.data('id')
+                    };
+                    return charts[(args.tag.data('id') + '_' + args.tag.data('key') + '_' + args.tag.data('charttype'))];
+                }
+                return null
             };
 
             $.getScript("https://www.google.com/jsapi").done(function () {
