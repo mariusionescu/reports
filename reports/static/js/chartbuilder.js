@@ -649,7 +649,7 @@ callback = function() {
                         {
                             if( self.computed_data[0][i] == 'Churn' )
                             {
-                                self.computed_data[0][i] = 'Uninstalls'
+                                self.computed_data[0][i] = 'Total Uninstalls'
                             }
                         }
                         var _table = new google.visualization.arrayToDataTable(
